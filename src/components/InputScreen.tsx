@@ -29,29 +29,30 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
         </div>
 
         <div className="relative z-10">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-8 ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
-            <Activity className={darkMode ? 'text-emerald-400' : 'text-emerald-600'} size={24} />
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+            <Activity className={darkMode ? 'text-emerald-400' : 'text-emerald-600'} size={28} />
           </div>
-          <h1 className={`text-5xl font-bold tracking-tighter mb-6 leading-[1.1] ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-            Metabolic<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">
-              Intelligence
+          <h1 className={`text-5xl font-bold tracking-tight mb-6 leading-[1.15] ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+            Personal Health<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-500">
+              Dashboard
             </span>
           </h1>
-          <p className={`text-sm leading-relaxed max-w-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-            Enter your anthropometric data to generate a comprehensive, clinical-grade health profile. Precision algorithms analyze your metabolic integrity.
+          <p className={`text-base leading-relaxed max-w-sm ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+            Enter your basic body measurements to get a simple, easy-to-understand breakdown of your health, muscle mass, and daily calorie needs.
           </p>
         </div>
 
         <div className="relative z-10 flex items-center gap-4">
           <button 
             onClick={toggleDarkMode}
-            className={`p-3 rounded-full transition-colors ${darkMode ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-black/5 hover:bg-black/10 text-slate-600'}`}
+            className={`p-3 rounded-full transition-colors ${darkMode ? 'bg-white/10 hover:bg-white/20 text-slate-200' : 'bg-black/10 hover:bg-black/20 text-slate-700'}`}
+            aria-label="Toggle Dark Mode"
           >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {darkMode ? <Sun size={24} /> : <Moon size={24} />}
           </button>
-          <div className={`text-xs font-mono uppercase tracking-widest ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-            System Ready
+          <div className={`text-sm font-medium uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            Ready to start
           </div>
         </div>
       </div>
@@ -63,26 +64,26 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
           {/* Demographics Row */}
           <div className="grid grid-cols-3 gap-6">
             <div className="col-span-1">
-              <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Age</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Age</label>
               <input
                 type="number"
                 value={metrics.age || ''}
                 onChange={(e) => updateMetric('age', parseInt(e.target.value) || 0)}
                 placeholder="0"
-                className={`w-full px-4 py-3 rounded-xl font-mono text-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${darkMode ? 'bg-[#1a1a1a] text-white placeholder:text-slate-700 border border-white/5' : 'bg-slate-50 text-slate-900 placeholder:text-slate-300 border border-slate-200'}`}
+                className={`w-full px-4 py-3 rounded-xl font-mono text-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${darkMode ? 'bg-[#1a1a1a] text-white placeholder:text-slate-600 border border-white/10' : 'bg-slate-50 text-slate-900 placeholder:text-slate-400 border border-slate-300'}`}
               />
             </div>
             <div className="col-span-2">
-              <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Gender</label>
-              <div className={`flex rounded-xl p-1 border ${darkMode ? 'bg-[#1a1a1a] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Gender</label>
+              <div className={`flex rounded-xl p-1 border ${darkMode ? 'bg-[#1a1a1a] border-white/10' : 'bg-slate-50 border-slate-300'}`}>
                 {(['male', 'female'] as const).map((g) => (
                   <button
                     key={g}
                     onClick={() => updateMetric('gender', g)}
-                    className={`flex-1 py-2.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold capitalize transition-all ${
                       metrics.gender === g 
-                        ? (darkMode ? 'bg-[#2a2a2a] text-emerald-400 shadow-sm' : 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200')
-                        : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
+                        ? (darkMode ? 'bg-[#2a2a2a] text-emerald-400 shadow-sm' : 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200')
+                        : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800')
                     }`}
                   >
                     {g}
@@ -94,14 +95,14 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
 
           {/* Anthropometrics Grid */}
           <div>
-            <label className={`block text-[10px] font-bold uppercase tracking-widest mb-4 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Anthropometrics</label>
+            <label className={`block text-xs font-bold uppercase tracking-wider mb-4 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Body Measurements</label>
             <div className="grid grid-cols-2 gap-6">
               <UnitInput label="Height" type="height" value={metrics.height} onChange={(v) => updateMetric('height', v)} darkMode={darkMode} />
               <UnitInput label="Weight" type="weight" value={metrics.weight} onChange={(v) => updateMetric('weight', v)} darkMode={darkMode} />
-              <UnitInput label="Waist" type="length" value={metrics.waist} onChange={(v) => updateMetric('waist', v)} darkMode={darkMode} tooltip="Measure at navel" />
-              <UnitInput label="Neck" type="length" value={metrics.neck} onChange={(v) => updateMetric('neck', v)} darkMode={darkMode} tooltip="Below Adam's apple" />
+              <UnitInput label="Waist" type="length" value={metrics.waist} onChange={(v) => updateMetric('waist', v)} darkMode={darkMode} tooltip="Measure around your belly button, relaxed." />
+              <UnitInput label="Neck" type="length" value={metrics.neck} onChange={(v) => updateMetric('neck', v)} darkMode={darkMode} tooltip="Measure just below your Adam's apple." />
               {metrics.gender === 'female' && (
-                <UnitInput label="Hip" type="length" value={metrics.hip} onChange={(v) => updateMetric('hip', v)} darkMode={darkMode} />
+                <UnitInput label="Hip" type="length" value={metrics.hip} onChange={(v) => updateMetric('hip', v)} darkMode={darkMode} tooltip="Measure around the widest part of your hips." />
               )}
             </div>
           </div>
@@ -109,33 +110,34 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
           {/* Context Row */}
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Activity Level</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Daily Activity Level</label>
               <select
                 value={metrics.activityLevel}
                 onChange={(e) => updateMetric('activityLevel', e.target.value as ActivityLevel)}
-                className={`w-full px-4 py-3.5 rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer ${darkMode ? 'bg-[#1a1a1a] text-white border border-white/5' : 'bg-slate-50 text-slate-900 border border-slate-200'}`}
+                className={`w-full px-4 py-3.5 rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer ${darkMode ? 'bg-[#1a1a1a] text-white border border-white/10' : 'bg-slate-50 text-slate-900 border border-slate-300'}`}
               >
-                <option value="sedentary">Sedentary (Office job)</option>
-                <option value="light">Light (1-3 days/wk)</option>
-                <option value="moderate">Moderate (3-5 days/wk)</option>
-                <option value="active">Active (6-7 days/wk)</option>
-                <option value="extreme">Extreme (Physical job)</option>
+                <option value="sedentary">Sedentary (Desk job, little exercise)</option>
+                <option value="light">Light (Exercise 1-3 days/week)</option>
+                <option value="moderate">Moderate (Exercise 3-5 days/week)</option>
+                <option value="active">Active (Exercise 6-7 days/week)</option>
+                <option value="extreme">Extreme (Physical job or athlete)</option>
               </select>
             </div>
             <div>
-              <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Phenotype</label>
-              <div className={`flex rounded-xl p-1 border ${darkMode ? 'bg-[#1a1a1a] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Body Type / Genetics</label>
+              <div className={`flex rounded-xl p-1 border ${darkMode ? 'bg-[#1a1a1a] border-white/10' : 'bg-slate-50 border-slate-300'}`}>
                 {(['standard', 'indian'] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => updateMetric('phenotype', p)}
-                    className={`flex-1 py-2.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-bold capitalize transition-all ${
                       metrics.phenotype === p 
-                        ? (darkMode ? 'bg-[#2a2a2a] text-emerald-400 shadow-sm' : 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200')
-                        : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
+                        ? (darkMode ? 'bg-[#2a2a2a] text-emerald-400 shadow-sm' : 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200')
+                        : (darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800')
                     }`}
+                    title={p === 'indian' ? 'South Asian genetics (adjusts for higher belly fat risk)' : 'Global average genetics'}
                   >
-                    {p}
+                    {p === 'indian' ? 'South Asian' : 'Global Avg'}
                   </button>
                 ))}
               </div>
@@ -147,15 +149,15 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
             <button
               onClick={onAnalyze}
               disabled={!isFormValid}
-              className={`w-full group flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all duration-300 ${
+              className={`w-full group flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all duration-300 ${
                 isFormValid 
                   ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:-translate-y-0.5' 
-                  : (darkMode ? 'bg-[#1a1a1a] text-slate-600 cursor-not-allowed' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+                  : (darkMode ? 'bg-[#1a1a1a] text-slate-600 cursor-not-allowed border border-white/5' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
               }`}
             >
-              <Fingerprint size={18} />
-              Initialize Analysis
-              <ChevronRight size={18} className={`transition-transform duration-300 ${isFormValid ? 'group-hover:translate-x-1' : ''}`} />
+              <Fingerprint size={20} />
+              Calculate My Results
+              <ChevronRight size={20} className={`transition-transform duration-300 ${isFormValid ? 'group-hover:translate-x-1' : ''}`} />
             </button>
           </div>
 
