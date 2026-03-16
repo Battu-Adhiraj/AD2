@@ -4,7 +4,6 @@ import { Dashboard } from './components/Dashboard';
 import { UserMetrics, calculateHealthMetrics, HealthResults } from './utils/calculations';
 import { AnimatePresence, motion } from 'motion/react';
 
-// Empty initial state as requested
 const INITIAL_METRICS: UserMetrics = {
   age: 0,
   gender: 'male',
@@ -19,8 +18,7 @@ const INITIAL_METRICS: UserMetrics = {
 
 export default function App() {
   const [metrics, setMetrics] = useState<UserMetrics>(() => {
-    // Load from local storage if available
-    const saved = localStorage.getItem('health_metrics');
+    const saved = localStorage.getItem('health_metrics_v3');
     return saved ? JSON.parse(saved) : INITIAL_METRICS;
   });
 
@@ -28,12 +26,10 @@ export default function App() {
   const [view, setView] = useState<'input' | 'dashboard'>('input');
   const [darkMode, setDarkMode] = useState(true);
 
-  // Persistence & Calculation Effect
   useEffect(() => {
-    localStorage.setItem('health_metrics', JSON.stringify(metrics));
+    localStorage.setItem('health_metrics_v3', JSON.stringify(metrics));
   }, [metrics]);
 
-  // Dark Mode Effect
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -50,57 +46,66 @@ export default function App() {
 
   const handleRecalculate = () => {
     setView('input');
-    // Optional: Reset metrics? Or keep them for editing? 
-    // Usually "Recalculate" implies editing existing data.
-    // If "Reset" was requested, we'd clear them. 
-    // Keeping data for better UX.
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
-  };
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   return (
-    <div className={`h-screen w-screen overflow-hidden font-sans transition-colors duration-500 ${darkMode ? 'bg-black' : 'bg-slate-50'}`}>
-      <AnimatePresence mode="wait">
-        {view === 'input' ? (
-          <motion.div
-            key="input"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full w-full"
-          >
-            <InputScreen 
-              metrics={metrics} 
-              setMetrics={setMetrics} 
-              onAnalyze={handleAnalyze} 
-              darkMode={darkMode}
-              toggleDarkMode={toggleDarkMode}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full w-full"
-          >
-            {results && (
-              <Dashboard 
-                results={results} 
+    <div className={`app-window transition-colors duration-500 ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-[#f5f5f5] text-slate-900'}`}>
+      {/* Fake Titlebar for Electron feel */}
+      <div className={`h-8 w-full flex items-center justify-between px-4 select-none shrink-0 z-50 ${darkMode ? 'bg-[#111] border-b border-white/5' : 'bg-[#e5e5e5] border-b border-black/5'}`} style={{ WebkitAppRegion: 'drag' } as any}>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+          <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+          <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+        </div>
+        <div className={`text-[10px] font-mono tracking-widest uppercase opacity-50 ${darkMode ? 'text-white' : 'text-black'}`}>
+          Metabolic Analytics Engine v3.0
+        </div>
+        <div className="w-16" /> {/* Spacer for balance */}
+      </div>
+
+      <div className="flex-1 relative overflow-hidden">
+        <AnimatePresence mode="wait">
+          {view === 'input' ? (
+            <motion.div
+              key="input"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0"
+            >
+              <InputScreen 
                 metrics={metrics} 
-                onRecalculate={handleRecalculate} 
+                setMetrics={setMetrics} 
+                onAnalyze={handleAnalyze} 
                 darkMode={darkMode}
                 toggleDarkMode={toggleDarkMode}
               />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0"
+            >
+              {results && (
+                <Dashboard 
+                  results={results} 
+                  metrics={metrics} 
+                  onRecalculate={handleRecalculate} 
+                  darkMode={darkMode}
+                  toggleDarkMode={toggleDarkMode}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

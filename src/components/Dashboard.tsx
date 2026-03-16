@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { HealthResults, UserMetrics } from '@/utils/calculations';
 import { GaugeChart } from './GaugeChart';
-import { MetricCard } from './MetricCard';
-import { AlertTriangle, Download, Activity, Zap, Scale, ArrowLeft, RefreshCw, Moon, Sun } from 'lucide-react';
+import { AlertTriangle, Download, RefreshCw, Activity, Zap, Scale, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import jsPDF from 'jspdf';
 
@@ -20,7 +19,6 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     const lineHeight = 7;
     let y = 20;
 
-    // Helper for text
     const addText = (text: string, x: number, fontSize: number = 10, font: string = 'helvetica', style: string = 'normal') => {
       doc.setFont(font, style);
       doc.setFontSize(fontSize);
@@ -28,13 +26,11 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
       y += lineHeight;
     };
 
-    // Header
     addText("Personal Health Analytics Report", 20, 18, 'helvetica', 'bold');
     y += 5;
     addText(`Date: ${new Date().toLocaleDateString()}`, 20, 10);
     y += 5;
 
-    // Section 1: User Profile
     addText("Subject Profile", 20, 14, 'helvetica', 'bold');
     addText(`Age: ${metrics.age} years`, 20);
     addText(`Gender: ${metrics.gender}`, 20);
@@ -44,13 +40,12 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     addText(`Activity Level: ${metrics.activityLevel}`, 20);
     y += 5;
 
-    // Section 2: Key Metrics
     addText("Metabolic Analysis", 20, 14, 'helvetica', 'bold');
     addText(`Metabolic Integrity Score (MIS): ${results.mis.toFixed(1)} / 10.0`, 20, 12, 'helvetica', 'bold');
     
-    if (results.mis >= 7) doc.setTextColor(16, 185, 129); // Emerald
-    else if (results.mis >= 4) doc.setTextColor(234, 179, 8); // Yellow
-    else doc.setTextColor(239, 68, 68); // Red
+    if (results.mis >= 7) doc.setTextColor(16, 185, 129);
+    else if (results.mis >= 4) doc.setTextColor(234, 179, 8);
+    else doc.setTextColor(239, 68, 68);
     
     doc.setTextColor(0, 0, 0);
 
@@ -59,27 +54,24 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     addText(`Waist-to-Height Ratio (WHtR): ${results.whtr.toFixed(2)}`, 20);
     y += 5;
 
-    // Section 3: Body Composition
     addText("Body Composition", 20, 14, 'helvetica', 'bold');
     addText(`Lean Body Mass: ${results.leanBodyMass.toFixed(1)} kg`, 20);
     addText(`Fat Mass: ${results.fatMass.toFixed(1)} kg`, 20);
     y += 5;
 
-    // Section 4: Energy & Nutrition
     addText("Energy & Nutrition", 20, 14, 'helvetica', 'bold');
     addText(`Basal Metabolic Rate (BMR): ${Math.round(results.bmr)} kcal/day`, 20);
     addText(`Total Daily Energy Expenditure (TDEE): ${Math.round(results.tdee)} kcal/day`, 20);
     addText(`Optimal Protein Target: ${Math.round(results.proteinTarget)} g/day`, 20);
     y += 5;
 
-    // Section 5: Risk Diagnostics
     addText("Clinical Risk Diagnostics", 20, 14, 'helvetica', 'bold');
     if (results.riskFlags.length === 0) {
-      doc.setTextColor(16, 185, 129); // Emerald
+      doc.setTextColor(16, 185, 129);
       addText("No specific metabolic flags detected.", 20);
       doc.setTextColor(0, 0, 0);
     } else {
-      doc.setTextColor(239, 68, 68); // Red
+      doc.setTextColor(239, 68, 68);
       results.riskFlags.forEach(flag => {
         addText(`• ${flag}`, 20);
       });
@@ -89,7 +81,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
-    doc.text("Clinical Algorithm Engine v1.0 • Author: Adhiraj Battu", 105, pageHeight - 10, { align: 'center' });
+    doc.text("Clinical Algorithm Engine v3.0 • Author: Adhiraj Battu", 105, pageHeight - 10, { align: 'center' });
 
     doc.save('health-analytics-report.pdf');
   };
@@ -104,192 +96,168 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     { name: 'Fat Mass', value: results.fatMass, fill: '#f43f5e' },
   ];
 
-  return (
-    <div className="h-screen w-screen bg-black text-slate-200 overflow-hidden flex flex-col">
-      {/* Header - Fixed Height */}
-      <div className="h-16 px-6 border-b border-slate-800 flex items-center justify-between bg-slate-950 shrink-0">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={toggleDarkMode}
-            className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+  const cardClass = `rounded-2xl flex flex-col relative overflow-hidden ${darkMode ? 'bg-[#111] border border-white/5' : 'bg-white border border-slate-200 shadow-sm'}`;
+  const textMuted = darkMode ? 'text-slate-500' : 'text-slate-400';
+  const textNormal = darkMode ? 'text-slate-300' : 'text-slate-600';
+  const textStrong = darkMode ? 'text-white' : 'text-slate-900';
 
-          <button
-            onClick={onRecalculate}
-            className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors"
-          >
-            <RefreshCw size={16} />
-            Recalculate
+  return (
+    <div className="w-full h-full flex flex-col p-6 gap-6">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between shrink-0">
+        <div>
+          <h2 className={`text-2xl font-bold tracking-tight ${textStrong}`}>Metabolic Dashboard</h2>
+          <p className={`text-xs font-mono uppercase tracking-widest mt-1 ${textMuted}`}>Subject ID: {Math.random().toString(36).substr(2, 6).toUpperCase()}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={onRecalculate} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#222] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
+            <RefreshCw size={14} /> Recalculate
+          </button>
+          <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-emerald-500 hover:bg-emerald-400 text-black transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <Download size={14} /> Export PDF
           </button>
         </div>
-        <button
-          onClick={handleDownload}
-          className="flex items-center gap-2 bg-slate-100 hover:bg-white text-black px-3 py-1.5 rounded-md font-medium text-xs transition-colors shadow-lg shadow-slate-900/50"
-        >
-          <Download size={14} />
-          Export PDF
-        </button>
       </div>
 
-      {/* Main Grid Content - Fills remaining height */}
-      <div className="flex-1 p-4 grid grid-cols-12 grid-rows-6 gap-4 min-h-0">
+      {/* Bento Grid */}
+      <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-4">
         
-        {/* 1. Gauge Chart (Top Left) - 3 cols, 3 rows */}
-        <div className="col-span-3 row-span-3 bg-slate-900/50 border border-slate-800 rounded-2xl relative overflow-hidden flex flex-col">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/0 to-slate-900/80 pointer-events-none" />
-          <div className="p-4 z-10 text-center">
-             <h3 className="text-xs font-medium text-slate-300 uppercase tracking-wider">Metabolic Integrity</h3>
-          </div>
-          <div className="flex-1 flex items-center justify-center -mt-4">
-             <GaugeChart score={results.mis} color={results.misColor} />
+        {/* MIS Gauge - 3x4 */}
+        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${textMuted}`}>Metabolic Integrity</h3>
+          <div className="flex-1 flex items-center justify-center">
+            <GaugeChart score={results.mis} color={results.misColor} darkMode={darkMode} />
           </div>
         </div>
 
-        {/* 2. Golden Trio (Top Middle) - 6 cols, 1 row */}
-        <div className="col-span-6 row-span-1 grid grid-cols-3 gap-4">
-           <MetricCard
-              title="WHtR"
-              value={results.whtr.toFixed(2)}
-              subtitle="Waist/Height"
-              className={results.whtr > 0.5 ? "border-rose-900/50 bg-rose-950/10" : ""}
-            />
-            <MetricCard
-              title="FFMI"
-              value={results.ffmi.toFixed(1)}
-              subtitle="Fat-Free Index"
-            />
-            <MetricCard
-              title="Body Fat %"
-              value={results.bodyFatPercentage.toFixed(1)}
-              unit="%"
-              subtitle="US Navy"
-              className={results.bodyFatPercentage > 25 ? "border-amber-900/50 bg-amber-950/10" : ""}
-            />
+        {/* Golden Trio - 6x2 */}
+        <div className="col-span-6 row-span-2 grid grid-cols-3 gap-4">
+          <div className={`p-5 justify-center ${cardClass} ${results.whtr > 0.5 ? (darkMode ? 'border-rose-500/30 bg-rose-500/5' : 'border-rose-200 bg-rose-50') : ''}`}>
+            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>WHtR</h3>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-3xl font-mono font-bold ${textStrong}`}>{results.whtr.toFixed(2)}</span>
+            </div>
+            <p className={`text-[10px] mt-1 ${textMuted}`}>Waist/Height Ratio</p>
+          </div>
+          <div className={`p-5 justify-center ${cardClass}`}>
+            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>FFMI</h3>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-3xl font-mono font-bold ${textStrong}`}>{results.ffmi.toFixed(1)}</span>
+            </div>
+            <p className={`text-[10px] mt-1 ${textMuted}`}>Fat-Free Mass Index</p>
+          </div>
+          <div className={`p-5 justify-center ${cardClass} ${results.bodyFatPercentage > 25 ? (darkMode ? 'border-amber-500/30 bg-amber-500/5' : 'border-amber-200 bg-amber-50') : ''}`}>
+            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>Body Fat</h3>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-3xl font-mono font-bold ${textStrong}`}>{results.bodyFatPercentage.toFixed(1)}</span>
+              <span className={`text-sm font-bold ${textMuted}`}>%</span>
+            </div>
+            <p className={`text-[10px] mt-1 ${textMuted}`}>US Navy Method</p>
+          </div>
         </div>
 
-        {/* 3. Risk Panel (Top Right) - 3 cols, 6 rows (Full Height Sidebar) */}
-        <div className="col-span-3 row-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col">
-           <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-4 shrink-0">
-              <Activity size={14} className="text-rose-500" />
-              Diagnostics
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
-              {results.riskFlags.length === 0 ? (
-                <div className="p-3 bg-emerald-950/20 border border-emerald-900/50 rounded-lg">
-                  <p className="text-xs font-medium text-emerald-300 mb-1">Optimal Profile</p>
-                  <p className="text-[10px] text-emerald-500/70 leading-tight">No metabolic flags detected.</p>
-                </div>
-              ) : (
-                results.riskFlags.map((flag, idx) => (
-                  <div key={idx} className="p-3 bg-rose-950/20 border border-rose-900/50 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle size={12} className="text-rose-400 mt-0.5 shrink-0" />
-                      <p className="text-xs font-medium text-rose-300 leading-tight">{flag}</p>
-                    </div>
+        {/* Diagnostics - 3x6 (Full right column) */}
+        <div className={`col-span-3 row-span-6 p-6 ${cardClass}`}>
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-6 shrink-0 ${textMuted}`}>
+            <Activity size={14} className="text-emerald-500" /> Clinical Diagnostics
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+            {results.riskFlags.length === 0 ? (
+              <div className={`p-4 rounded-xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 size={16} className="text-emerald-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className={`text-xs font-bold mb-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>Optimal Profile</p>
+                    <p className={`text-[10px] leading-relaxed ${darkMode ? 'text-emerald-500/70' : 'text-emerald-600/70'}`}>No metabolic flags detected. All markers within clinical ranges.</p>
                   </div>
-                ))
-              )}
-            </div>
-            {/* Footer in Sidebar */}
-            <div className="mt-4 pt-4 border-t border-slate-800 shrink-0">
-               <p className="text-[10px] text-slate-600 font-mono text-center">
-                 v1.0 • Adhiraj Battu
-               </p>
-            </div>
-        </div>
-
-        {/* 4. Energy Balance (Middle Left) - 3 cols, 3 rows */}
-        <div className="col-span-3 row-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col">
-            <div className="flex items-center justify-between mb-2 shrink-0">
-              <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Zap size={14} className="text-yellow-500" />
-                Energy
-              </h3>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={energyData} layout="vertical" margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} width={30} />
-                  <Tooltip 
-                    cursor={{ fill: '#1e293b' }}
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', fontSize: '12px' }}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                    {energyData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mt-2 text-center shrink-0">
-              <div>
-                <p className="text-[10px] text-slate-500">BMR</p>
-                <p className="text-sm font-bold text-blue-400">{Math.round(results.bmr)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500">TDEE</p>
-                <p className="text-sm font-bold text-violet-400">{Math.round(results.tdee)}</p>
-              </div>
-            </div>
-        </div>
-
-        {/* 5. Protein (Middle Middle) - 3 cols, 2 rows */}
-        <div className="col-span-3 row-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-20 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10" />
-             <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-1">
-                <Scale size={14} className="text-emerald-500" />
-                Protein Target
-              </h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-white tracking-tighter">{Math.round(results.proteinTarget)}</span>
-                <span className="text-sm font-medium text-emerald-500">g/day</span>
-              </div>
-              <p className="text-[10px] text-slate-500 mt-1">
-                Based on {results.leanBodyMass.toFixed(1)}kg LBM
-              </p>
-        </div>
-
-        {/* 6. Body Comp (Middle Right-ish) - 3 cols, 3 rows */}
-        <div className="col-span-3 row-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col">
-             <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2 shrink-0">Composition</h3>
-             <div className="flex-1 min-h-0 relative">
-               <ResponsiveContainer width="100%" height="100%">
-                 <PieChart>
-                    <Pie
-                      data={bodyCompData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={55}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {bodyCompData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', fontSize: '12px' }} />
-                 </PieChart>
-               </ResponsiveContainer>
-               {/* Center Text Overlay */}
-               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-xs font-bold text-slate-500">{results.bodyFatPercentage.toFixed(0)}%</span>
-               </div>
-             </div>
-             <div className="flex justify-between mt-2 shrink-0 px-2">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] text-slate-400">{results.leanBodyMass.toFixed(0)}kg</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-rose-500" />
-                  <span className="text-[10px] text-slate-400">{results.fatMass.toFixed(0)}kg</span>
+              </div>
+            ) : (
+              results.riskFlags.map((flag, idx) => (
+                <div key={idx} className={`p-4 rounded-xl border ${darkMode ? 'bg-rose-500/10 border-rose-500/20' : 'bg-rose-50 border-rose-100'}`}>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle size={16} className="text-rose-500 mt-0.5 shrink-0" />
+                    <p className={`text-xs font-bold leading-relaxed ${darkMode ? 'text-rose-400' : 'text-rose-700'}`}>{flag}</p>
+                  </div>
                 </div>
-             </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Energy Balance - 3x4 */}
+        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-4 shrink-0 ${textMuted}`}>
+            <Zap size={14} className="text-blue-500" /> Energy Expenditure
+          </h3>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={energyData} layout="vertical" margin={{ left: 0, right: 20, top: 0, bottom: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" stroke={darkMode ? "#64748b" : "#94a3b8"} fontSize={10} tickLine={false} axisLine={false} width={35} fontWeight={700} />
+                <Tooltip cursor={{ fill: darkMode ? '#1e293b' : '#f1f5f9' }} contentStyle={{ backgroundColor: darkMode ? '#0f172a' : '#ffffff', borderColor: darkMode ? '#334155' : '#e2e8f0', color: darkMode ? '#f8fafc' : '#0f172a', fontSize: '12px', borderRadius: '8px' }} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                  {energyData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-between mt-4 shrink-0">
+            <div>
+              <p className={`text-[9px] font-bold uppercase ${textMuted}`}>BMR</p>
+              <p className={`text-sm font-mono font-bold text-blue-500`}>{Math.round(results.bmr)} <span className="text-[10px] text-blue-500/50">kcal</span></p>
+            </div>
+            <div className="text-right">
+              <p className={`text-[9px] font-bold uppercase ${textMuted}`}>TDEE</p>
+              <p className={`text-sm font-mono font-bold text-violet-500`}>{Math.round(results.tdee)} <span className="text-[10px] text-violet-500/50">kcal</span></p>
+            </div>
+          </div>
+        </div>
+
+        {/* Body Composition - 3x4 */}
+        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-4 shrink-0 ${textMuted}`}>Body Composition</h3>
+          <div className="flex-1 min-h-0 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={bodyCompData} cx="50%" cy="50%" innerRadius="60%" outerRadius="80%" paddingAngle={5} dataKey="value" stroke="none">
+                  {bodyCompData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: darkMode ? '#0f172a' : '#ffffff', borderColor: darkMode ? '#334155' : '#e2e8f0', color: darkMode ? '#f8fafc' : '#0f172a', fontSize: '12px', borderRadius: '8px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className={`text-2xl font-mono font-bold ${textStrong}`}>{metrics.weight.toFixed(1)}</span>
+              <span className={`text-[9px] font-bold uppercase ${textMuted}`}>Total KG</span>
+            </div>
+          </div>
+          <div className="flex justify-between mt-4 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className={`text-[10px] font-mono ${textNormal}`}>{results.leanBodyMass.toFixed(1)}kg</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className={`text-[10px] font-mono ${textNormal}`}>{results.fatMass.toFixed(1)}kg</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Protein Target - 3x2 */}
+        <div className={`col-span-3 row-span-2 p-6 justify-center relative ${cardClass}`}>
+          <div className="absolute top-0 right-0 p-16 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-2 ${textMuted}`}>
+            <Scale size={14} className="text-emerald-500" /> Protein Target
+          </h3>
+          <div className="flex items-baseline gap-1">
+            <span className={`text-4xl font-mono font-bold ${textStrong}`}>{Math.round(results.proteinTarget)}</span>
+            <span className="text-xs font-bold text-emerald-500">g/day</span>
+          </div>
+          <p className={`text-[9px] mt-1 ${textMuted}`}>Based on {results.leanBodyMass.toFixed(1)}kg LBM</p>
         </div>
 
       </div>

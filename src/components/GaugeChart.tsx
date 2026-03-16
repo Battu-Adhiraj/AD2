@@ -1,55 +1,55 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface GaugeChartProps {
-  score: number;
+  score: number; // 1 to 10
   color: string;
+  darkMode: boolean;
 }
 
-export function GaugeChart({ score, color }: GaugeChartProps) {
-  // Score is 1-10. We want to map it to a semi-circle (180 degrees).
-  // 1 -> 0 deg, 10 -> 180 deg? Or just fill percentage.
+export function GaugeChart({ score, color, darkMode }: GaugeChartProps) {
+  // SVG parameters
+  const size = 200;
+  const strokeWidth = 12;
+  const radius = (size - strokeWidth) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
   
-  const data = [
-    { name: 'Score', value: score },
-    { name: 'Remaining', value: 10 - score },
-  ];
+  // Semi-circle math
+  const circumference = Math.PI * radius;
+  // Map score (1-10) to percentage (0-100)
+  const percentage = ((score - 1) / 9) * 100;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const cx = "50%";
-  const cy = "100%";
-  const iR = 80;
-  const oR = 120;
-
-  // Needle angle
-  // 1 = 180 deg (left), 10 = 0 deg (right) in standard polar?
-  // Recharts starts at 0 (3 o'clock) and goes counter-clockwise.
-  // We want semi-circle from 180 (9 o'clock) to 0 (3 o'clock).
-  // Actually, let's just use startAngle 180 endAngle 0.
-  
   return (
-    <div className="relative h-48 w-full flex flex-col items-center justify-end pb-4">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            dataKey="value"
-            startAngle={180}
-            endAngle={0}
-            data={data}
-            cx={cx}
-            cy={cy}
-            innerRadius={iR}
-            outerRadius={oR}
-            stroke="none"
-          >
-            <Cell fill={color} />
-            <Cell fill="#1e293b" /> {/* Slate-800 */}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-      
+    <div className="relative flex flex-col items-center justify-center">
+      <svg width={size} height={size / 2 + strokeWidth} className="overflow-visible">
+        {/* Background Track */}
+        <path
+          d={`M ${strokeWidth/2} ${cy} A ${radius} ${radius} 0 0 1 ${size - strokeWidth/2} ${cy}`}
+          fill="none"
+          stroke={darkMode ? "#1e293b" : "#e2e8f0"}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        />
+        {/* Progress Arc */}
+        <path
+          d={`M ${strokeWidth/2} ${cy} A ${radius} ${radius} 0 0 1 ${size - strokeWidth/2} ${cy}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
       <div className="absolute bottom-0 flex flex-col items-center">
-        <span className="text-4xl font-bold text-white tracking-tighter">{score.toFixed(1)}</span>
-        <span className="text-xs text-slate-400 uppercase tracking-widest mt-1">MIS Score</span>
+        <span className={`text-5xl font-mono font-bold tracking-tighter ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+          {score.toFixed(1)}
+        </span>
+        <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          Score / 10.0
+        </span>
       </div>
     </div>
   );
