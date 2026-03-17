@@ -17,18 +17,11 @@ const INITIAL_METRICS: UserMetrics = {
 };
 
 export default function App() {
-  const [metrics, setMetrics] = useState<UserMetrics>(() => {
-    const saved = localStorage.getItem('health_metrics_v3');
-    return saved ? JSON.parse(saved) : INITIAL_METRICS;
-  });
+  const [metrics, setMetrics] = useState<UserMetrics>(INITIAL_METRICS);
 
   const [results, setResults] = useState<HealthResults | null>(null);
   const [view, setView] = useState<'input' | 'dashboard'>('input');
   const [darkMode, setDarkMode] = useState(true);
-
-  useEffect(() => {
-    localStorage.setItem('health_metrics_v3', JSON.stringify(metrics));
-  }, [metrics]);
 
   useEffect(() => {
     if (darkMode) {

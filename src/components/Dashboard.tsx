@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { HealthResults, UserMetrics } from '@/utils/calculations';
 import { GaugeChart } from './GaugeChart';
-import { AlertTriangle, Download, RefreshCw, Activity, Zap, Scale, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Download, RefreshCw, Activity, Zap, Scale, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import jsPDF from 'jspdf';
+import { generateAIReport, AIReport } from '@/services/aiService';
 
 interface DashboardProps {
   results: HealthResults;
@@ -14,68 +15,104 @@ interface DashboardProps {
 }
 
 export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDarkMode }: DashboardProps) {
-  const handleDownload = () => {
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+
+  const handleDownload = (aiData: AIReport | null = null) => {
     const doc = new jsPDF();
     const lineHeight = 7;
     let y = 20;
+    const margin = 20;
+    const maxWidth = 170;
 
-    const addText = (text: string, x: number, fontSize: number = 10, font: string = 'helvetica', style: string = 'normal') => {
+    const addText = (text: string, fontSize: number = 10, font: string = 'helvetica', style: string = 'normal', color: number[] = [0,0,0]) => {
       doc.setFont(font, style);
       doc.setFontSize(fontSize);
-      doc.text(text, x, y);
-      y += lineHeight;
+      doc.setTextColor(color[0], color[1], color[2]);
+      
+      const lines = doc.splitTextToSize(text, maxWidth);
+      for (const line of lines) {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      }
     };
 
-    addText("Personal Health Analytics Report", 20, 18, 'helvetica', 'bold');
-    y += 5;
-    addText(`Date: ${new Date().toLocaleDateString()}`, 20, 10);
-    y += 5;
-
-    addText("Subject Profile", 20, 14, 'helvetica', 'bold');
-    addText(`Age: ${metrics.age} years`, 20);
-    addText(`Gender: ${metrics.gender}`, 20);
-    addText(`Height: ${metrics.height} cm`, 20);
-    addText(`Weight: ${metrics.weight} kg`, 20);
-    addText(`Phenotype: ${metrics.phenotype}`, 20);
-    addText(`Activity Level: ${metrics.activityLevel}`, 20);
+    addText("Personal Health Analytics Report", 18, 'helvetica', 'bold');
+    y += 2;
+    addText(`Date: ${new Date().toLocaleDateString()}`, 10);
     y += 5;
 
-    addText("Metabolic Analysis", 20, 14, 'helvetica', 'bold');
-    addText(`Metabolic Integrity Score (MIS): ${results.mis.toFixed(1)} / 10.0`, 20, 12, 'helvetica', 'bold');
+    addText("Subject Profile", 14, 'helvetica', 'bold');
+    addText(`Age: ${metrics.age} years`);
+    addText(`Gender: ${metrics.gender}`);
+    addText(`Height: ${metrics.height} cm`);
+    addText(`Weight: ${metrics.weight} kg`);
+    addText(`Phenotype: ${metrics.phenotype}`);
+    addText(`Activity Level: ${metrics.activityLevel}`);
+    y += 5;
+
+    addText("Metabolic Analysis", 14, 'helvetica', 'bold');
     
-    if (results.mis >= 7) doc.setTextColor(16, 185, 129);
-    else if (results.mis >= 4) doc.setTextColor(234, 179, 8);
-    else doc.setTextColor(239, 68, 68);
+    let misColor = [0,0,0];
+    if (results.mis >= 7) misColor = [16, 185, 129];
+    else if (results.mis >= 4) misColor = [234, 179, 8];
+    else misColor = [239, 68, 68];
     
-    doc.setTextColor(0, 0, 0);
-
-    addText(`Body Fat Percentage: ${results.bodyFatPercentage.toFixed(1)}%`, 20);
-    addText(`Fat-Free Mass Index (FFMI): ${results.ffmi.toFixed(1)}`, 20);
-    addText(`Waist-to-Height Ratio (WHtR): ${results.whtr.toFixed(2)}`, 20);
+    addText(`Metabolic Integrity Score (MIS): ${results.mis.toFixed(1)} / 10.0`, 12, 'helvetica', 'bold', misColor);
+    addText(`Body Fat Percentage: ${results.bodyFatPercentage.toFixed(1)}%`);
+    addText(`Fat-Free Mass Index (FFMI): ${results.ffmi.toFixed(1)}`);
+    addText(`Waist-to-Height Ratio (WHtR): ${results.whtr.toFixed(2)}`);
     y += 5;
 
-    addText("Body Composition", 20, 14, 'helvetica', 'bold');
-    addText(`Lean Body Mass: ${results.leanBodyMass.toFixed(1)} kg`, 20);
-    addText(`Fat Mass: ${results.fatMass.toFixed(1)} kg`, 20);
+    addText("Body Composition", 14, 'helvetica', 'bold');
+    addText(`Lean Body Mass: ${results.leanBodyMass.toFixed(1)} kg`);
+    addText(`Fat Mass: ${results.fatMass.toFixed(1)} kg`);
     y += 5;
 
-    addText("Energy & Nutrition", 20, 14, 'helvetica', 'bold');
-    addText(`Basal Metabolic Rate (BMR): ${Math.round(results.bmr)} kcal/day`, 20);
-    addText(`Total Daily Energy Expenditure (TDEE): ${Math.round(results.tdee)} kcal/day`, 20);
-    addText(`Optimal Protein Target: ${Math.round(results.proteinTarget)} g/day`, 20);
+    addText("Energy & Nutrition", 14, 'helvetica', 'bold');
+    addText(`Basal Metabolic Rate (BMR): ${Math.round(results.bmr)} kcal/day`);
+    addText(`Total Daily Energy Expenditure (TDEE): ${Math.round(results.tdee)} kcal/day`);
+    addText(`Optimal Protein Target: ${Math.round(results.proteinTarget)} g/day`);
     y += 5;
 
-    addText("Clinical Risk Diagnostics", 20, 14, 'helvetica', 'bold');
+    addText("Clinical Risk Diagnostics", 14, 'helvetica', 'bold');
     if (results.riskFlags.length === 0) {
-      doc.setTextColor(16, 185, 129);
-      addText("No specific metabolic flags detected.", 20);
-      doc.setTextColor(0, 0, 0);
+      addText("No specific metabolic flags detected.", 10, 'helvetica', 'normal', [16, 185, 129]);
     } else {
-      doc.setTextColor(239, 68, 68);
       results.riskFlags.forEach(flag => {
-        addText(`• ${flag}`, 20);
+        addText(`• ${flag}`, 10, 'helvetica', 'normal', [239, 68, 68]);
       });
-      doc.setTextColor(0, 0, 0);
+    }
+    y += 10;
+
+    if (aiData) {
+      doc.addPage();
+      y = 20;
+      addText("AI Clinical Analysis & Coaching", 18, 'helvetica', 'bold', [16, 185, 129]);
+      y += 5;
+      
+      addText("Motivation & Status", 14, 'helvetica', 'bold');
+      addText(aiData.motivation, 10, 'helvetica', 'normal');
+      y += 5;
+
+      addText("Health Coaching", 14, 'helvetica', 'bold');
+      addText(aiData.coaching, 10, 'helvetica', 'normal');
+      y += 5;
+
+      addText("Risk Assessment & Predictions", 14, 'helvetica', 'bold');
+      aiData.predictions.forEach(item => addText(`• ${item}`, 10, 'helvetica', 'normal'));
+      y += 5;
+
+      addText("Precautionary Guidelines", 14, 'helvetica', 'bold');
+      aiData.guidelines.forEach(item => addText(`• ${item}`, 10, 'helvetica', 'normal'));
+      y += 5;
+
+      addText("Doctor Consultation Advice", 14, 'helvetica', 'bold');
+      aiData.consultationAdvice.forEach(item => addText(`• ${item}`, 10, 'helvetica', 'normal'));
+      y += 5;
     }
 
     const pageHeight = doc.internal.pageSize.height;
@@ -83,7 +120,20 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     doc.setTextColor(100, 100, 100);
     doc.text("Clinical Algorithm Engine v3.0 • Author: Adhiraj Battu", 105, pageHeight - 10, { align: 'center' });
 
-    doc.save('health-analytics-report.pdf');
+    doc.save(aiData ? 'health-analytics-ai-report.pdf' : 'health-analytics-report.pdf');
+  };
+
+  const handleGenerateAIReport = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const aiData = await generateAIReport(metrics, results);
+      handleDownload(aiData);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to generate AI insights. Please try again.");
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   const energyData = [
@@ -113,8 +163,16 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
           <button onClick={onRecalculate} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#222] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
             <RefreshCw size={14} /> Recalculate
           </button>
-          <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-emerald-500 hover:bg-emerald-400 text-black transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-            <Download size={14} /> Export PDF
+          <button onClick={() => handleDownload()} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'}`}>
+            <Download size={14} /> Basic PDF
+          </button>
+          <button 
+            onClick={handleGenerateAIReport} 
+            disabled={isGeneratingAI}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-400 hover:to-blue-400 text-white transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] ${isGeneratingAI ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isGeneratingAI ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            {isGeneratingAI ? 'Analyzing...' : 'AI Report (PDF)'}
           </button>
         </div>
       </div>
