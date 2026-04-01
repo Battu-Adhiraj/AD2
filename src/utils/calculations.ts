@@ -35,6 +35,20 @@ const log10 = (x: number) => Math.log10(x);
 export const calculateHealthMetrics = (metrics: UserMetrics): HealthResults => {
   const { age, gender, weight, height, waist, neck, hip, activityLevel, phenotype } = metrics;
 
+  // Input Validation
+  if (age <= 0 || weight <= 0 || height <= 0 || waist <= 0 || neck <= 0) {
+    throw new Error("Invalid input metrics. All core values must be greater than 0.");
+  }
+  if (gender === 'female' && hip <= 0) {
+    throw new Error("Hip measurement is required for females.");
+  }
+  if (gender === 'male' && waist <= neck) {
+    throw new Error("Waist measurement must be greater than neck measurement.");
+  }
+  if (gender === 'female' && (waist + hip) <= neck) {
+    throw new Error("Waist + Hip measurement must be greater than neck measurement.");
+  }
+
   // 1. Core Anthropometrics
   const heightM = height / 100;
   const bmi = weight / (heightM * heightM);
@@ -45,12 +59,12 @@ export const calculateHealthMetrics = (metrics: UserMetrics): HealthResults => {
   if (gender === 'male') {
     // Male: 495 / (1.0324 - 0.19077 * log10(waist - neck) + 0.15456 * log10(height)) - 450
     // Ensure waist > neck to avoid log errors
-    const waistNeckDiff = Math.max(1, waist - neck);
-    bodyFatPercentage = 495 / (1.0324 - 0.19077 * log10(waistNeckDiff) + 0.15456 * log10(height)) - 450;
+    const waistNeckDiff = Math.max(1, (waist - neck) / 2.54);
+    bodyFatPercentage = 495 / (1.0324 - 0.19077 * log10(waistNeckDiff) + 0.15456 * log10(height / 2.54)) - 450;
   } else {
     // Female: 495 / (1.29579 - 0.35004 * log10(waist + hip - neck) + 0.22100 * log10(height)) - 450
-    const waistHipNeckDiff = Math.max(1, waist + hip - neck);
-    bodyFatPercentage = 495 / (1.29579 - 0.35004 * log10(waistHipNeckDiff) + 0.22100 * log10(height)) - 450;
+    const waistHipNeckDiff = Math.max(1, (waist + hip - neck) / 2.54);
+    bodyFatPercentage = 495 / (1.29579 - 0.35004 * log10(waistHipNeckDiff) + 0.22100 * log10(height / 2.54)) - 450;
   }
   
   // Clamp BF% to reasonable limits (e.g. 2% to 70%)

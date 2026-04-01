@@ -12,16 +12,32 @@ interface InputScreenProps {
 }
 
 export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDarkMode }: InputScreenProps) {
+  const [localAge, setLocalAge] = React.useState<string>(metrics.age ? metrics.age.toString() : '');
+
   const updateMetric = <K extends keyof UserMetrics>(key: K, value: UserMetrics[K]) => {
     setMetrics(prev => ({ ...prev, [key]: value }));
   };
 
-  const isFormValid = metrics.age > 0 && metrics.weight > 0 && metrics.height > 0 && metrics.waist > 0 && metrics.neck > 0;
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocalAge(val);
+    updateMetric('age', parseInt(val) || 0);
+  };
+
+  const isFormValid = 
+    metrics.age > 0 && 
+    metrics.weight > 0 && 
+    metrics.height > 0 && 
+    metrics.waist > 0 && 
+    metrics.neck > 0 &&
+    (metrics.gender === 'male' || metrics.hip > 0) &&
+    (metrics.gender === 'female' || metrics.waist > metrics.neck) &&
+    (metrics.gender === 'male' || (metrics.waist + metrics.hip) > metrics.neck);
 
   return (
-    <div className="w-full h-full flex">
+    <div className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
       {/* Left Branding Panel */}
-      <div className={`w-2/5 h-full relative flex flex-col justify-between p-12 overflow-hidden ${darkMode ? 'bg-[#0a0a0a]' : 'bg-slate-100'}`}>
+      <div className={`w-full md:w-2/5 h-auto md:h-full relative flex flex-col justify-between p-8 md:p-12 overflow-hidden shrink-0 ${darkMode ? 'bg-[#0a0a0a]' : 'bg-slate-100'}`}>
         {/* Abstract Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-emerald-500/10 blur-[120px]" />
@@ -58,17 +74,17 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
       </div>
 
       {/* Right Form Panel */}
-      <div className={`w-3/5 h-full flex flex-col p-12 overflow-y-auto custom-scrollbar ${darkMode ? 'bg-[#111]' : 'bg-white'}`}>
+      <div className={`w-full md:w-3/5 h-auto md:h-full flex flex-col p-8 md:p-12 overflow-y-visible md:overflow-y-auto custom-scrollbar ${darkMode ? 'bg-[#111]' : 'bg-white'}`}>
         <div className="max-w-2xl w-full mx-auto flex-1 flex flex-col justify-center space-y-10">
           
           {/* Demographics Row */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="col-span-1">
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Age</label>
               <input
                 type="number"
-                value={metrics.age || ''}
-                onChange={(e) => updateMetric('age', parseInt(e.target.value) || 0)}
+                value={localAge}
+                onChange={handleAgeChange}
                 placeholder="0"
                 className={`w-full px-4 py-3 rounded-xl font-mono text-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${darkMode ? 'bg-[#1a1a1a] text-white placeholder:text-slate-600 border border-white/10' : 'bg-slate-50 text-slate-900 placeholder:text-slate-400 border border-slate-300'}`}
               />
@@ -96,7 +112,7 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
           {/* Anthropometrics Grid */}
           <div>
             <label className={`block text-xs font-bold uppercase tracking-wider mb-4 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Body Measurements</label>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <UnitInput label="Height" type="height" value={metrics.height} onChange={(v) => updateMetric('height', v)} darkMode={darkMode} />
               <UnitInput label="Weight" type="weight" value={metrics.weight} onChange={(v) => updateMetric('weight', v)} darkMode={darkMode} />
               <UnitInput label="Waist" type="length" value={metrics.waist} onChange={(v) => updateMetric('waist', v)} darkMode={darkMode} tooltip="Measure around your belly button, relaxed." />
@@ -108,7 +124,7 @@ export function InputScreen({ metrics, setMetrics, onAnalyze, darkMode, toggleDa
           </div>
 
           {/* Context Row */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Daily Activity Level</label>
               <select

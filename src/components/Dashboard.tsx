@@ -3,7 +3,7 @@ import { HealthResults, UserMetrics } from '@/utils/calculations';
 import { GaugeChart } from './GaugeChart';
 import { AlertTriangle, Download, RefreshCw, Activity, Zap, Scale, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { generateAIReport, AIReport } from '@/services/aiService';
 
 interface DashboardProps {
@@ -16,8 +16,9 @@ interface DashboardProps {
 
 export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDarkMode }: DashboardProps) {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiReportData, setAiReportData] = useState<AIReport | null>(null);
 
-  const handleDownload = (aiData: AIReport | null = null) => {
+  const handleDownload = (aiData: AIReport | null = aiReportData) => {
     const doc = new jsPDF();
     const lineHeight = 7;
     let y = 20;
@@ -127,6 +128,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
     setIsGeneratingAI(true);
     try {
       const aiData = await generateAIReport(metrics, results);
+      setAiReportData(aiData);
       handleDownload(aiData);
     } catch (error) {
       console.error(error);
@@ -152,14 +154,14 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
   const textStrong = darkMode ? 'text-white' : 'text-slate-900';
 
   return (
-    <div className="w-full h-full flex flex-col p-6 gap-6">
+    <div className="w-full h-full flex flex-col p-4 md:p-6 gap-4 md:gap-6 overflow-y-auto md:overflow-hidden custom-scrollbar">
       {/* Top Bar */}
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-4 sm:gap-0">
         <div>
           <h2 className={`text-2xl font-bold tracking-tight ${textStrong}`}>Metabolic Dashboard</h2>
           <p className={`text-xs font-mono uppercase tracking-widest mt-1 ${textMuted}`}>Subject ID: {Math.random().toString(36).substr(2, 6).toUpperCase()}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button onClick={onRecalculate} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#222] text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>
             <RefreshCw size={14} /> Recalculate
           </button>
@@ -178,10 +180,10 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
       </div>
 
       {/* Bento Grid */}
-      <div className="flex-1 min-h-0 grid grid-cols-12 grid-rows-6 gap-4">
+      <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-12 md:grid-rows-6 gap-4">
         
         {/* MIS Gauge - 3x4 */}
-        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+        <div className={`md:col-span-3 md:row-span-4 p-6 min-h-[250px] md:min-h-0 ${cardClass}`}>
           <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${textMuted}`}>Metabolic Integrity</h3>
           <div className="flex-1 flex items-center justify-center">
             <GaugeChart score={results.mis} color={results.misColor} darkMode={darkMode} />
@@ -189,7 +191,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
         </div>
 
         {/* Golden Trio - 6x2 */}
-        <div className="col-span-6 row-span-2 grid grid-cols-3 gap-4">
+        <div className="md:col-span-6 md:row-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className={`p-5 justify-center ${cardClass} ${results.whtr > 0.5 ? (darkMode ? 'border-rose-500/30 bg-rose-500/5' : 'border-rose-200 bg-rose-50') : ''}`}>
             <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>WHtR</h3>
             <div className="flex items-baseline gap-1">
@@ -215,7 +217,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
         </div>
 
         {/* Diagnostics - 3x6 (Full right column) */}
-        <div className={`col-span-3 row-span-6 p-6 ${cardClass}`}>
+        <div className={`md:col-span-3 md:row-span-6 p-6 min-h-[300px] md:min-h-0 ${cardClass}`}>
           <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-6 shrink-0 ${textMuted}`}>
             <Activity size={14} className="text-emerald-500" /> Clinical Diagnostics
           </h3>
@@ -244,7 +246,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
         </div>
 
         {/* Energy Balance - 3x4 */}
-        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+        <div className={`md:col-span-3 md:row-span-4 p-6 min-h-[250px] md:min-h-0 ${cardClass}`}>
           <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-4 shrink-0 ${textMuted}`}>
             <Zap size={14} className="text-blue-500" /> Energy Expenditure
           </h3>
@@ -275,7 +277,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
         </div>
 
         {/* Body Composition - 3x4 */}
-        <div className={`col-span-3 row-span-4 p-6 ${cardClass}`}>
+        <div className={`md:col-span-3 md:row-span-4 p-6 min-h-[250px] md:min-h-0 ${cardClass}`}>
           <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-4 shrink-0 ${textMuted}`}>Body Composition</h3>
           <div className="flex-1 min-h-0 relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -306,7 +308,7 @@ export function Dashboard({ results, metrics, onRecalculate, darkMode, toggleDar
         </div>
 
         {/* Protein Target - 3x2 */}
-        <div className={`col-span-3 row-span-2 p-6 justify-center relative ${cardClass}`}>
+        <div className={`md:col-span-3 md:row-span-2 p-6 justify-center relative ${cardClass}`}>
           <div className="absolute top-0 right-0 p-16 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <h3 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-2 ${textMuted}`}>
             <Scale size={14} className="text-emerald-500" /> Protein Target

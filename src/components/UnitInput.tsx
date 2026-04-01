@@ -18,26 +18,39 @@ export function UnitInput({ label, value, onChange, type, tooltip, darkMode }: U
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    if (value === 0) {
-      setDisplayValue('');
-      setFeet('');
-      setInches('');
-      return;
-    }
+    // Avoid overwriting local state if it functionally matches the prop value
+    // This allows users to type "1." without it snapping to "1"
+    let currentParsed = 0;
     if (unit === 'metric') {
-      setDisplayValue(value.toFixed(1).replace(/\.0$/, ''));
+      currentParsed = parseFloat(displayValue) || 0;
+      if (Math.abs(currentParsed - value) < 0.01) return;
+      setDisplayValue(value === 0 ? '' : value.toFixed(1).replace(/\.0$/, ''));
     } else {
       if (type === 'weight') {
-        setDisplayValue((value * 2.20462).toFixed(1).replace(/\.0$/, ''));
+        currentParsed = (parseFloat(displayValue) || 0) / 2.20462;
+        if (Math.abs(currentParsed - value) < 0.01) return;
+        setDisplayValue(value === 0 ? '' : (value * 2.20462).toFixed(1).replace(/\.0$/, ''));
       } else if (type === 'length') {
-        setDisplayValue((value / 2.54).toFixed(1).replace(/\.0$/, ''));
+        currentParsed = (parseFloat(displayValue) || 0) * 2.54;
+        if (Math.abs(currentParsed - value) < 0.01) return;
+        setDisplayValue(value === 0 ? '' : (value / 2.54).toFixed(1).replace(/\.0$/, ''));
       } else if (type === 'height') {
-        const totalInches = value / 2.54;
-        setFeet(Math.floor(totalInches / 12).toString());
-        setInches((totalInches % 12).toFixed(1).replace(/\.0$/, ''));
+        const ft = parseFloat(feet) || 0;
+        const inc = parseFloat(inches) || 0;
+        currentParsed = ((ft * 12) + inc) * 2.54;
+        if (Math.abs(currentParsed - value) < 0.01) return;
+        
+        if (value === 0) {
+          setFeet('');
+          setInches('');
+        } else {
+          const totalInches = value / 2.54;
+          setFeet(Math.floor(totalInches / 12).toString());
+          setInches((totalInches % 12).toFixed(1).replace(/\.0$/, ''));
+        }
       }
     }
-  }, [value, unit, type]);
+  }, [value, unit, type, displayValue, feet, inches]);
 
   const handleMetricChange = (valStr: string) => {
     setDisplayValue(valStr);
